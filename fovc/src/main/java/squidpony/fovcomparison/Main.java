@@ -1,4 +1,4 @@
-package fovcomparison;
+package squidpony.fovcomparison;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
