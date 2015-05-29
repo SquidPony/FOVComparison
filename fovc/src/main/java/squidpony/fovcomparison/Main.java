@@ -155,7 +155,6 @@ public class Main {
             final FOV fov = new FOV(FOV.SHADOW);
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
-                System.out.println("Starting shadowcasting");
                 double[][] resist = new double[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
@@ -163,7 +162,6 @@ public class Main {
                     }
                 }
                 resist = fov.calculateFOV(resist, startx, starty);
-                System.out.println("Done running");
                 boolean[][] result = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
@@ -176,7 +174,6 @@ public class Main {
 
         miniShadowPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
-                System.out.println("Starting mini shadowcasting");
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
