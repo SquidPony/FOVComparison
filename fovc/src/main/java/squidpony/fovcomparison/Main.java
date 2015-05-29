@@ -14,7 +14,8 @@ import squidpony.SColor;
 import squidpony.squidgrid.FOV;
 import squidpony.squidgrid.LOS;
 import squidpony.squidgrid.gui.TextCellFactory;
-import squidpony.squidmath.Bresenham;
+import squidpony.squidgrid.mapping.ClassicRogueMapGenerator;
+import squidpony.squidgrid.mapping.Terrain;
 import squidpony.squidmath.RNG;
 
 /**
@@ -28,7 +29,7 @@ public class Main {
     private RNG rng = new RNG();
 
     private JFrame frame;
-    private ExamplePanel shadowPanel, miniShadowPanel, rayPanel, bresenhamPanel, fullLightPanel;
+    private ExamplePanel shadowPanel, miniShadowPanel, rayPanel, bresenhamPanel, fullLightPanel, eliasPanel;
     private ExamplePanel[] panels;
     private Controls controls;
 
@@ -85,7 +86,7 @@ public class Main {
             map[0][y] = false;
             map[gridWidth - 1][y] = false;
         }
-        
+
         // Make sure center is clear
         map[at.x][at.y] = true;
 
@@ -125,8 +126,15 @@ public class Main {
         });
 
         controls.classicButton.addActionListener(new ActionListener() {
+            ClassicRogueMapGenerator gen = new ClassicRogueMapGenerator(3, 3, gridWidth, gridHeight, 5, 9, 5, 9);
+
             public void actionPerformed(ActionEvent e) {
-                // TODO make map
+                Terrain[][] result = gen.create();
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        map[x][y] = !result[x][y].equals(Terrain.WALL);
+                    }
+                }
                 updateMap();
             }
         });
@@ -171,7 +179,7 @@ public class Main {
     private void setupPanels() {
         TextCellFactory tcf = new TextCellFactory().fit("#.@").font(new Font("Ariel", Font.PLAIN, 14)).width(6).height(6);
 
-        shadowPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+        shadowPanel = new ExamplePanel("SHADOW", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final FOV fov = new FOV(FOV.SHADOW);
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
@@ -192,30 +200,31 @@ public class Main {
             }
         });
 
-        miniShadowPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+        miniShadowPanel = new ExamplePanel("MINI-S", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final FOV fov = new FOV(FOV.SHADOW);
+            final int mult = 5;
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
-                int width = gridWidth * 3;
-                int height = gridHeight * 3;
+                int width = gridWidth * mult;
+                int height = gridHeight * mult;
                 double[][] resist = new double[width][height];
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
-                        resist[x][y] = map[x / 3][y / 3] ? 0 : 1;
+                        resist[x][y] = map[x / mult][y / mult] ? 0 : 1;
                     }
                 }
-                resist = fov.calculateFOV(resist, startx * 3, starty * 3);
+                resist = fov.calculateFOV(resist, startx * mult + (mult / 2), starty * mult + (mult / 2));
                 boolean[][] result = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
-                        result[x / 3][y / 3] |= resist[x][y] > 0;// if any are lit then call it lit
+                        result[x / mult][y / mult] |= resist[x][y] > 0;// if any are lit then call it lit
                     }
                 }
                 return result;
             }
         });
 
-        rayPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+        rayPanel = new ExamplePanel("RAY", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final LOS los = new LOS(LOS.RAY);
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
@@ -228,14 +237,14 @@ public class Main {
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = los.isReachable(resist, at.x, at.y, startx, starty);
+                        mapping[x][y] = los.isReachable(resist, startx, starty, x, y);
                     }
                 }
                 return mapping;
             }
         });
 
-        bresenhamPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+        bresenhamPanel = new ExamplePanel("BRES", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final LOS los = new LOS(LOS.BRESENHAM);
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
@@ -248,14 +257,14 @@ public class Main {
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = los.isReachable(resist, at.x, at.y, startx, starty);
+                        mapping[x][y] = los.isReachable(resist, startx, starty, x, y);
                     }
                 }
                 return mapping;
             }
         });
 
-        fullLightPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+        fullLightPanel = new ExamplePanel("FULL", gridWidth, gridHeight, tcf, new ExampleFOV() {
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
@@ -267,7 +276,27 @@ public class Main {
             }
         });
 
-        panels = new ExamplePanel[]{shadowPanel, miniShadowPanel, rayPanel, bresenhamPanel, fullLightPanel};
+        eliasPanel = new ExamplePanel("ELIAS", gridWidth, gridHeight, tcf, new ExampleFOV() {
+            final LOS los = new LOS(LOS.ELIAS);
+
+            public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
+                double[][] resist = new double[gridWidth][gridHeight];
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        resist[x][y] = map[x][y] ? 0 : 1;
+                    }
+                }
+                boolean[][] mapping = new boolean[gridWidth][gridHeight];
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        mapping[x][y] = los.isReachable(resist, startx, starty, x, y);
+                    }
+                }
+                return mapping;
+            }
+        });
+
+        panels = new ExamplePanel[]{shadowPanel, miniShadowPanel, bresenhamPanel, rayPanel, fullLightPanel, eliasPanel};
         JPanel panel = new JPanel();
         panel.setBackground(SColor.BLACK);
         panel.setLayout(new GridLayout(0, 3, 5, 5));

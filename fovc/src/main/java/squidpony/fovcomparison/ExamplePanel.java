@@ -1,6 +1,7 @@
 package squidpony.fovcomparison;
 
 import javax.swing.JLayeredPane;
+import squidpony.SColor;
 import squidpony.squidgrid.gui.SquidPanel;
 import squidpony.squidgrid.gui.TextCellFactory;
 
@@ -12,13 +13,15 @@ import squidpony.squidgrid.gui.TextCellFactory;
 public class ExamplePanel {
 
     private SquidPanel back, front;
+    private String name;
     private ExampleFOV fov;
     private int width, height;
     private boolean[][] fovMap;
     private boolean[][] map;
     private int x, y;
 
-    public ExamplePanel(int width, int height, TextCellFactory tcf, ExampleFOV fov) {
+    public ExamplePanel(String name, int width, int height, TextCellFactory tcf, ExampleFOV fov) {
+        this.name = name;
         this.width = width;
         this.height = height;
         this.fov = fov;
@@ -95,6 +98,7 @@ public class ExamplePanel {
             }
         }
         front.put(x, y, '@');
+        front.put(1, 1, name, SColor.SCARLET);
 
         back.refresh();
         front.refresh();
