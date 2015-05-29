@@ -12,7 +12,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import squidpony.SColor;
 import squidpony.squidgrid.FOV;
+import squidpony.squidgrid.LOS;
 import squidpony.squidgrid.gui.TextCellFactory;
+import squidpony.squidmath.Bresenham;
 import squidpony.squidmath.RNG;
 
 /**
@@ -44,7 +46,11 @@ public class Main {
      */
     private void go() {
         at = new Point(gridWidth / 2, gridHeight / 2);
-        map[at.x][at.y] = true;//make sure the center is clear
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                map[x][y] = true;
+            }
+        }
 
         frame = new JFrame("FOV Comparison");
         frame.getContentPane().setBackground(SColor.BLACK);
@@ -58,6 +64,7 @@ public class Main {
         setupControls();
 
         setupPanels();
+        updateMap();
 
         // TODO - give each panel its own FOV to run
         frame.pack();
@@ -69,6 +76,19 @@ public class Main {
      * Updates the FOV maps in each panel.
      */
     private void updateMap() {
+        // Add in a hard edge
+        for (int x = 0; x < gridWidth; x++) {
+            map[x][0] = false;
+            map[x][gridHeight - 1] = false;
+        }
+        for (int y = 0; y < gridHeight; y++) {
+            map[0][y] = false;
+            map[gridWidth - 1][y] = false;
+        }
+        
+        // Make sure center is clear
+        map[at.x][at.y] = true;
+
         for (ExamplePanel panel : panels) {
             panel.updateMap(map);
             panel.refresh();
@@ -173,23 +193,42 @@ public class Main {
         });
 
         miniShadowPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+            final FOV fov = new FOV(FOV.SHADOW);
+
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
-                boolean[][] mapping = new boolean[gridWidth][gridHeight];
-                for (int x = 0; x < gridWidth; x++) {
-                    for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = true;
+                int width = gridWidth * 3;
+                int height = gridHeight * 3;
+                double[][] resist = new double[width][height];
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        resist[x][y] = map[x / 3][y / 3] ? 0 : 1;
                     }
                 }
-                return mapping;
+                resist = fov.calculateFOV(resist, startx * 3, starty * 3);
+                boolean[][] result = new boolean[gridWidth][gridHeight];
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        result[x / 3][y / 3] |= resist[x][y] > 0;// if any are lit then call it lit
+                    }
+                }
+                return result;
             }
         });
 
         rayPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+            final LOS los = new LOS(LOS.RAY);
+
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
+                double[][] resist = new double[gridWidth][gridHeight];
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        resist[x][y] = map[x][y] ? 0 : 1;
+                    }
+                }
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = true;
+                        mapping[x][y] = los.isReachable(resist, at.x, at.y, startx, starty);
                     }
                 }
                 return mapping;
@@ -197,11 +236,19 @@ public class Main {
         });
 
         bresenhamPanel = new ExamplePanel(gridWidth, gridHeight, tcf, new ExampleFOV() {
+            final LOS los = new LOS(LOS.BRESENHAM);
+
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
+                double[][] resist = new double[gridWidth][gridHeight];
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        resist[x][y] = map[x][y] ? 0 : 1;
+                    }
+                }
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = true;
+                        mapping[x][y] = los.isReachable(resist, at.x, at.y, startx, starty);
                     }
                 }
                 return mapping;
@@ -213,7 +260,7 @@ public class Main {
                 boolean[][] mapping = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        mapping[x][y] = true;
+                        mapping[x][y] = Math.abs(at.x - startx) < gridWidth / 2 && Math.abs(at.y - starty) < gridHeight / 2;
                     }
                 }
                 return mapping;
