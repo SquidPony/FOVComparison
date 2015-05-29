@@ -26,7 +26,9 @@ public class ExamplePanel {
         this.height = height;
         this.fov = fov;
         back = new SquidPanel(width, height, tcf, null);
+        back.setDefaultForeground(SColor.BLACK);
         front = new SquidPanel(width, height, tcf, null);
+        front.setDefaultForeground(SColor.BLUE_GREEN);
         fovMap = new boolean[width][height];
         map = new boolean[width][height];
         for (int x = 0; x < width; x++) {
@@ -97,7 +99,7 @@ public class ExamplePanel {
                 }
             }
         }
-        front.put(x, y, '@');
+        front.put(x, y, '@', SColor.GREENFINCH);
         front.put(1, 1, name, SColor.SCARLET);
 
         back.refresh();
