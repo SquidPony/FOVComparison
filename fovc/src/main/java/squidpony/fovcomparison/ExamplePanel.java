@@ -1,5 +1,7 @@
 package squidpony.fovcomparison;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JLayeredPane;
 import squidpony.SColor;
 import squidpony.squidgrid.gui.SquidPanel;
@@ -19,6 +21,7 @@ public class ExamplePanel {
     private boolean[][] fovMap;
     private boolean[][] map;
     private int x, y;
+    private boolean active = true;
 
     public ExamplePanel(String name, int width, int height, TextCellFactory tcf, ExampleFOV fov) {
         this.name = name;
@@ -54,6 +57,16 @@ public class ExamplePanel {
         layer.setPreferredSize(back.getPreferredSize());
         layer.setSize(back.getPreferredSize());
 
+        layer.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                active = !active;
+                refresh();
+            }
+
+        });
+
         refresh();
     }
 
@@ -64,7 +77,9 @@ public class ExamplePanel {
      * @param y
      */
     public void updateFOV(int x, int y) {
-        fovMap = fov.doFOV(map, x, y);
+        if (active) {
+            fovMap = fov.doFOV(map, x, y);
+        }
         this.x = x;
         this.y = y;
     }
@@ -101,6 +116,10 @@ public class ExamplePanel {
         }
         front.put(x, y, '@', SColor.GREENFINCH);
         front.put(1, 1, name, SColor.SCARLET);
+
+        if (!active) {
+            front.put(1, 2, "Inactive", SColor.SCARLET);
+        }
 
         back.refresh();
         front.refresh();
