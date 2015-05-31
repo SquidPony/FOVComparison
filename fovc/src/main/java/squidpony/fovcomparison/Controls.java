@@ -20,7 +20,7 @@ public class Controls extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        openButton = new javax.swing.JButton();
+        randomButton = new javax.swing.JButton();
         boulderButton = new javax.swing.JButton();
         smallRoomButton = new javax.swing.JButton();
         caveButton = new javax.swing.JButton();
@@ -30,7 +30,7 @@ public class Controls extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(0, 0, 0));
 
-        openButton.setText("Open");
+        randomButton.setText("Random");
 
         boulderButton.setText("Boulders");
 
@@ -50,7 +50,7 @@ public class Controls extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(randomButton, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(caveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -70,7 +70,7 @@ public class Controls extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(openButton)
+                    .addComponent(randomButton)
                     .addComponent(caveButton)
                     .addComponent(boulderButton)
                     .addComponent(smallRoomButton)
@@ -87,7 +87,7 @@ public class Controls extends javax.swing.JPanel {
     public javax.swing.JButton caveButton;
     public javax.swing.JButton classicButton;
     public javax.swing.JButton modernButton;
-    public javax.swing.JButton openButton;
+    public javax.swing.JButton randomButton;
     public javax.swing.JButton smallRoomButton;
     public javax.swing.JButton startButton;
     // End of variables declaration//GEN-END:variables

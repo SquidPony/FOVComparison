@@ -23,7 +23,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="openButton" min="-2" pref="87" max="-2" attributes="0"/>
+              <Component id="randomButton" min="-2" pref="87" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="caveButton" min="-2" pref="87" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -45,7 +45,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="openButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="randomButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="caveButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="boulderButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="smallRoomButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -59,9 +59,9 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JButton" name="openButton">
+    <Component class="javax.swing.JButton" name="randomButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Open"/>
+        <Property name="text" type="java.lang.String" value="Random"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>

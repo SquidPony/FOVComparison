@@ -16,6 +16,8 @@ import squidpony.squidgrid.LOS;
 import squidpony.squidgrid.gui.TextCellFactory;
 import squidpony.squidgrid.mapping.ClassicRogueMapGenerator;
 import squidpony.squidgrid.mapping.Terrain;
+import squidpony.squidgrid.mapping.styled.DungeonBoneGen;
+import squidpony.squidgrid.mapping.styled.TilesetType;
 import squidpony.squidmath.RNG;
 
 /**
@@ -24,7 +26,7 @@ import squidpony.squidmath.RNG;
  */
 public class Main {
 
-    private static final int gridWidth = 41, gridHeight = 41;
+    private static final int gridWidth = 41, gridHeight = 41, cellWidth = 8, cellHeight = 8;
 
     private RNG rng = new RNG();
 
@@ -113,14 +115,24 @@ public class Main {
 //    public JButton startButton; <-- starts a run of the FOV (at first with just one pass, we can add movement later)
         controls.boulderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // TODO make map
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        map[x][y] = rng.nextDouble() > 0.07;
+                    }
+                }
                 updateMap();
             }
         });
 
         controls.caveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // TODO make map
+                DungeonBoneGen gen = new DungeonBoneGen();
+                char[][] result = gen.generate(TilesetType.CAVES_LIMIT_CONNECTIVITY, gridWidth, gridWidth);
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        map[x][y] = result[x][y] == '.';
+                    }
+                }
                 updateMap();
             }
         });
@@ -154,15 +166,24 @@ public class Main {
 
         controls.modernButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // TODO make map
+                DungeonBoneGen gen = new DungeonBoneGen();
+                char[][] result = gen.generate(TilesetType.ROUND_ROOMS_DIAGONAL_CORRIDORS, gridWidth, gridWidth);
+                for (int x = 0; x < gridWidth; x++) {
+                    for (int y = 0; y < gridHeight; y++) {
+                        map[x][y] = result[x][y] == '.';
+                    }
+                }
+                updateMap();
             }
         });
 
-        controls.openButton.addActionListener(new ActionListener() {
+        controls.randomButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                DungeonBoneGen gen = new DungeonBoneGen();
+                char[][] result = gen.generate(rng.getRandomElement(TilesetType.values()), gridWidth, gridWidth);
                 for (int x = 0; x < gridWidth; x++) {
                     for (int y = 0; y < gridHeight; y++) {
-                        map[x][y] = true;
+                        map[x][y] = result[x][y] == '.';
                     }
                 }
                 updateMap();
@@ -177,7 +198,7 @@ public class Main {
     }
 
     private void setupPanels() {
-        TextCellFactory tcf = new TextCellFactory().fit("#.@").font(new Font("Ariel", Font.PLAIN, 14)).width(6).height(6);
+        TextCellFactory tcf = new TextCellFactory().fit("#.@").font(new Font("Ariel", Font.PLAIN, 14)).width(cellWidth).height(cellHeight).initBySize();
 
         shadowPanel = new ExamplePanel("SHADOW", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final FOV fov = new FOV(FOV.SHADOW);
@@ -202,19 +223,19 @@ public class Main {
 
         miniShadowPanel = new ExamplePanel("MINI-S", gridWidth, gridHeight, tcf, new ExampleFOV() {
             final FOV fov = new FOV(FOV.SHADOW);
-            final int mult = 5;
+            final int mult = 3;
 
             public boolean[][] doFOV(boolean[][] map, int startx, int starty) {
                 int width = gridWidth * mult;
                 int height = gridHeight * mult;
                 double[][] resist = new double[width][height];
+                boolean[][] result = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
                         resist[x][y] = map[x / mult][y / mult] ? 0 : 1;
                     }
                 }
                 resist = fov.calculateFOV(resist, startx * mult + (mult / 2), starty * mult + (mult / 2));
-                boolean[][] result = new boolean[gridWidth][gridHeight];
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
                         result[x / mult][y / mult] |= resist[x][y] > 0;// if any are lit then call it lit
